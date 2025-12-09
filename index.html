@@ -688,6 +688,31 @@
             gap: 0.75rem;
         }
 
+        .blog-card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .blog-card-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--primary-glow);
+        }
+
+        .blog-card-link svg {
+            width: 14px;
+            height: 14px;
+        }
+
         .blogs-empty {
             text-align: center;
             padding: 4rem 2rem;
@@ -1027,9 +1052,18 @@
         .timeline-current .timeline-marker { box-shadow: 0 0 20px var(--secondary); }
 
         /* Leaflet overrides */
-        .leaflet-container { background: #1a2e2a !important; }
-        .emerald-map-tiles { filter: grayscale(100%) sepia(50%) hue-rotate(120deg) saturate(80%) brightness(0.7) contrast(1.1); }
-        .leaflet-tile-pane { filter: drop-shadow(0 0 0 #619389); }
+        .leaflet-container { background: var(--dark) !important; }
+        .emerald-map-tiles { filter: grayscale(100%) brightness(0.4) contrast(1.2); }
+        
+        /* Custom map styling overlay */
+        #map::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(195, 173, 208, 0.08) 0%, rgba(153, 198, 189, 0.08) 100%);
+            pointer-events: none;
+            z-index: 400;
+        }
 
         .leaflet-popup-content-wrapper {
             background: var(--dark-lighter) !important;
@@ -1266,6 +1300,10 @@
         <div class="blogs-header">
             <h2>Blogs</h2>
             <p>Sharing my thoughts—hope they inspire you in some way.</p>
+        </div>
+
+        <div class="blog-filters" id="blogFilters">
+            <button class="filter-btn active" data-filter="all">All</button>
         </div>
 
         <div class="blogs-grid" id="blogsGrid">
@@ -1664,6 +1702,29 @@
 
         // Blog data - will be populated dynamically from ./blogs/ folder
         let blogsData = [];
+        let currentFilter = 'all';
+
+        // Function to generate filter buttons based on available tags
+        function renderFilterButtons() {
+            const filtersContainer = document.getElementById('blogFilters');
+            const tags = [...new Set(blogsData.map(blog => blog.tag).filter(tag => tag))];
+            
+            filtersContainer.innerHTML = `
+                <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
+                ${tags.map(tag => `
+                    <button class="filter-btn ${currentFilter === tag ? 'active' : ''}" data-filter="${tag}">${tag}</button>
+                `).join('')}
+            `;
+
+            // Add click handlers for filter buttons
+            filtersContainer.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentFilter = btn.dataset.filter;
+                    renderFilterButtons();
+                    renderBlogCards();
+                });
+            });
+        }
 
         // Function to render blog cards
         function renderBlogCards() {
@@ -1688,8 +1749,24 @@
                 return new Date(b.date) - new Date(a.date);
             });
 
-            blogsGrid.innerHTML = blogsData.map((blog, index) => `
-                <article class="blog-card" data-blog="${index}">
+            // Filter blogs based on current filter
+            const filteredBlogs = currentFilter === 'all' 
+                ? blogsData 
+                : blogsData.filter(blog => blog.tag === currentFilter);
+
+            if (filteredBlogs.length === 0) {
+                blogsGrid.innerHTML = `
+                    <div class="blogs-empty">
+                        <div class="blogs-empty-icon">🔍</div>
+                        <h3>No posts found</h3>
+                        <p>No blog posts match this filter.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            blogsGrid.innerHTML = filteredBlogs.map((blog, index) => `
+                <article class="blog-card" data-blog="${blogsData.indexOf(blog)}" data-tag="${blog.tag || ''}">
                     <div class="blog-card-preview">
                         <div class="blog-card-meta">
                             ${blog.tag ? `<span class="blog-card-tag">${blog.tag}</span>` : ''}
@@ -1697,14 +1774,24 @@
                         </div>
                         <h3 class="blog-card-title">${blog.title}</h3>
                         <p class="blog-card-excerpt">${blog.excerpt}</p>
-                        <span class="blog-card-read-more">Read more →</span>
+                        ${blog.link ? `
+                            <a href="${blog.link}" target="_blank" class="blog-card-link" onclick="event.stopPropagation();">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                                Visit Link
+                            </a>
+                        ` : `<span class="blog-card-read-more">Read more →</span>`}
                     </div>
                 </article>
             `).join('');
 
             // Add click handlers for blog cards
             document.querySelectorAll('.blog-card').forEach(card => {
-                card.addEventListener('click', () => {
+                card.addEventListener('click', (e) => {
+                    // Don't open modal if clicking on external link
+                    if (e.target.closest('.blog-card-link')) return;
+                    
                     const blogIndex = card.dataset.blog;
                     const blog = blogsData[blogIndex];
                     
@@ -1712,6 +1799,12 @@
                     blogModalMeta.innerHTML = `
                         ${blog.tag ? `<span class="blog-card-tag">${blog.tag}</span>` : ''}
                         ${blog.date ? `<span class="blog-card-date">${blog.date}</span>` : ''}
+                        ${blog.link ? `<a href="${blog.link}" target="_blank" class="blog-card-link">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            Visit Link
+                        </a>` : ''}
                     `;
                     blogModalBody.innerHTML = parseMarkdown(blog.content);
                     
@@ -1784,6 +1877,7 @@
                             title: title,
                             date: frontmatter.date || '',
                             tag: frontmatter.tag || frontmatter.category || '',
+                            link: frontmatter.link || frontmatter.url || '',
                             excerpt: excerpt,
                             content: content,
                             filename: cleanFilename
@@ -1796,6 +1890,7 @@
                 
                 const loadedBlogs = await Promise.all(blogPromises);
                 blogsData = loadedBlogs.filter(blog => blog !== null);
+                renderFilterButtons();
                 renderBlogCards();
                 
             } catch (error) {
