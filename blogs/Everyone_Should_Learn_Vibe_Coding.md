@@ -2,6 +2,7 @@
 title: "Everyone Should Learn Vibe Coding"
 date: "2025-12-04"
 tag: "Thoughts"
+link: "https://www.linkedin.com/posts/caslow_everyone-should-learn-vibe-coding-for-anyone-activity-7402330912581193728-RfiX?utm_source=share&utm_medium=member_desktop&rcm=ACoAADnkRIQBGIlhAVgD11vb-3zTDyr00a981jM"
 ---
 For anyone studying a computer-science–related degree, learning vibe coding can feel terrifying. Not because it’s difficult, but because it seems to trivialize all our years of learning how to code.
 
