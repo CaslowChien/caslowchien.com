@@ -1027,8 +1027,9 @@
         .timeline-current .timeline-marker { box-shadow: 0 0 20px var(--secondary); }
 
         /* Leaflet overrides */
-        .leaflet-container { background: #0a1f1a !important; }
-        .emerald-map-tiles { filter: sepia(30%) hue-rotate(100deg) saturate(140%) brightness(0.85); }
+        .leaflet-container { background: #1a2e2a !important; }
+        .emerald-map-tiles { filter: grayscale(100%) sepia(50%) hue-rotate(120deg) saturate(80%) brightness(0.7) contrast(1.1); }
+        .leaflet-tile-pane { filter: drop-shadow(0 0 0 #619389); }
 
         .leaflet-popup-content-wrapper {
             background: var(--dark-lighter) !important;
@@ -1742,12 +1743,22 @@
                 }
                 
                 const blogFiles = await response.json();
+                console.log('Found blog files:', blogFiles);
                 
                 // Load each markdown file
                 const blogPromises = blogFiles.map(async (filename) => {
+                    // Ensure filename is trimmed and clean
+                    const cleanFilename = filename.trim();
+                    const url = `./blogs/${cleanFilename}`;
+                    
                     try {
-                        const mdResponse = await fetch(`./blogs/${filename}`);
-                        if (!mdResponse.ok) return null;
+                        console.log(`Loading: ${url}`);
+                        const mdResponse = await fetch(url);
+                        
+                        if (!mdResponse.ok) {
+                            console.warn(`Could not load ${cleanFilename}: ${mdResponse.status} ${mdResponse.statusText}`);
+                            return null;
+                        }
                         
                         const mdContent = await mdResponse.text();
                         const { frontmatter, content } = parseFrontmatter(mdContent);
@@ -1756,10 +1767,10 @@
                         let title = frontmatter.title;
                         if (!title) {
                             const headingMatch = content.match(/^#\s+(.+)$/m);
-                            title = headingMatch ? headingMatch[1] : filename.replace('.md', '');
+                            title = headingMatch ? headingMatch[1] : cleanFilename.replace('.md', '');
                         }
                         
-                        // Create excerpt from content (first 150 chars of text)
+                        // Create excerpt from content (first 200 chars of text)
                         const textContent = content
                             .replace(/^#.*$/gm, '') // Remove headings
                             .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // Remove links
@@ -1767,16 +1778,18 @@
                             .trim();
                         const excerpt = textContent.substring(0, 200) + (textContent.length > 200 ? '...' : '');
                         
+                        console.log(`Loaded: ${cleanFilename} - "${title}"`);
+                        
                         return {
                             title: title,
                             date: frontmatter.date || '',
                             tag: frontmatter.tag || frontmatter.category || '',
                             excerpt: excerpt,
                             content: content,
-                            filename: filename
+                            filename: cleanFilename
                         };
                     } catch (err) {
-                        console.error(`Error loading ${filename}:`, err);
+                        console.error(`Error loading ${cleanFilename}:`, err);
                         return null;
                     }
                 });
