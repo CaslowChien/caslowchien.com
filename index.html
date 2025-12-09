@@ -124,6 +124,12 @@
             margin-bottom: 1rem;
             opacity: 0;
             animation: fadeUp 1s ease forwards;
+            word-spacing: 0.1em;
+        }
+
+        h1 br {
+            display: block;
+            content: " ";
         }
 
         h1 span {
@@ -1052,17 +1058,12 @@
         .timeline-current .timeline-marker { box-shadow: 0 0 20px var(--secondary); }
 
         /* Leaflet overrides */
-        .leaflet-container { background: var(--dark) !important; }
-        .emerald-map-tiles { filter: grayscale(100%) brightness(0.4) contrast(1.2); }
+        .leaflet-container { 
+            background: var(--dark-lighter) !important; 
+        }
         
-        /* Custom map styling overlay */
-        #map::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, rgba(195, 173, 208, 0.08) 0%, rgba(153, 198, 189, 0.08) 100%);
-            pointer-events: none;
-            z-index: 400;
+        .leaflet-tile-pane {
+            opacity: 0.7;
         }
 
         .leaflet-popup-content-wrapper {
@@ -1084,7 +1085,11 @@
             .modal-details { padding: 2rem; }
             .blogs-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
             .about-content { flex-direction: column; }
-            .map-container { height: 350px; }
+            .map-container { height: 350px; width: 100%; }
+            #map { min-height: 350px; }
+            
+            h1 br { content: " "; }
+            h1 br::after { content: " "; }
         }
 
         @media (max-width: 768px) {
@@ -1093,7 +1098,6 @@
             .spectrum-indicator { padding: 0 1rem; gap: 1rem; }
             .spectrum-label .label-text { font-size: 0.65rem; letter-spacing: 1px; }
             .projects-container { height: 50vh; gap: 0.5rem; }
-            .projects-container:hover .project-card:hover { min-width: 200px; flex: 4; }
             .project-card { border-radius: 14px; min-width: 30px; }
             .project-number { font-size: 2rem; }
             footer { flex-direction: column; gap: 1rem; text-align: center; }
@@ -1105,15 +1109,23 @@
             .blog-filters { gap: 0.5rem; }
             .filter-btn { padding: 0.5rem 1rem; font-size: 0.75rem; }
             .about-section { padding: 4rem 1.5rem; }
-            .map-container { height: 300px; }
+            .map-container { height: 300px; width: 100%; position: relative; z-index: 1; }
+            #map { min-height: 300px; height: 100% !important; }
             .contact-section { padding: 4rem 1.5rem; }
+            
+            /* Fix title spacing on mobile */
+            h1 br { display: inline; }
+            h1 br::before { content: " "; }
         }
 
         @media (max-width: 480px) {
             .hero-text { margin-bottom: 2rem; }
             .spectrum-indicator { margin-bottom: 1.5rem; }
             h1 { font-size: clamp(1.6rem, 4.5vw, 2rem); }
-            h1 br { display: none; }
+            
+            /* Fix title - show space instead of line break */
+            h1 br { display: inline; }
+            h1 br::before { content: " "; }
 
             .projects-container {
                 flex-direction: column;
@@ -1148,30 +1160,39 @@
             .project-card .project-title { font-size: 0.9rem; display: none; }
             .project-card .project-category { display: none; }
 
-            .projects-container:hover .project-card { flex: none; min-width: unset; height: 80px; }
-
-            .projects-container .project-card:hover,
-            .project-card:active {
-                flex: none;
-                min-width: unset;
+            /* Mobile: expanded state for project cards */
+            .project-card.expanded {
                 height: 200px;
                 border-color: var(--primary);
                 box-shadow: 0 0 30px var(--primary-glow), 0 0 60px rgba(153, 198, 189, 0.1);
             }
 
-            .projects-container .project-card:hover .project-info,
-            .project-card:active .project-info { flex-direction: column; align-items: flex-start; }
+            .project-card.expanded .project-info { 
+                flex-direction: column; 
+                align-items: flex-start; 
+            }
 
-            .projects-container .project-card:hover .project-title,
-            .project-card:active .project-title { display: block; }
+            .project-card.expanded .project-title { display: block; }
+            .project-card.expanded .project-category { display: block; }
+            .project-card.expanded .project-number { font-size: 2.5rem; }
+            
+            /* Map mobile fix */
+            .map-container { 
+                height: 280px; 
+                width: 100%; 
+                min-height: 280px;
+                position: relative;
+                z-index: 1;
+            }
+            #map { 
+                min-height: 280px; 
+                height: 100% !important;
+                width: 100% !important;
+                position: relative;
+                z-index: 1;
+            }
 
-            .projects-container .project-card:hover .project-category,
-            .project-card:active .project-category { display: block; }
-
-            .projects-container .project-card:hover .project-number,
-            .project-card:active .project-number { font-size: 2.5rem; }
-
-            .blog-card-embed { min-height: 350px; }
+            .blog-card-preview { padding: 1.5rem; }
         }
     </style>
 </head>
@@ -1506,10 +1527,24 @@
         const modalLinks = document.getElementById('modalLinks');
         const modalNote = document.getElementById('modalNote');
 
+        // Check if mobile device
+        const isMobile = window.matchMedia('(max-width: 480px)').matches || 'ontouchstart' in window;
+
         document.querySelectorAll('.project-card').forEach(card => {
-            card.addEventListener('click', () => {
+            card.addEventListener('click', (e) => {
                 const projectId = card.dataset.project;
                 const project = projectsData[projectId];
+
+                // Mobile: tap once to expand, tap again to open modal
+                if (isMobile && window.innerWidth <= 480) {
+                    if (!card.classList.contains('expanded')) {
+                        // First tap: expand this card, collapse others
+                        document.querySelectorAll('.project-card.expanded').forEach(c => c.classList.remove('expanded'));
+                        card.classList.add('expanded');
+                        return; // Don't open modal yet
+                    }
+                    // Second tap on expanded card: open modal
+                }
 
                 modalImage.src = project.image;
                 modalImage.alt = project.title;
@@ -1542,6 +1577,13 @@
             });
         });
 
+        // Close expanded cards when clicking outside
+        document.addEventListener('click', (e) => {
+            if (isMobile && !e.target.closest('.project-card')) {
+                document.querySelectorAll('.project-card.expanded').forEach(c => c.classList.remove('expanded'));
+            }
+        });
+
         modalClose.addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
@@ -1553,6 +1595,9 @@
 
         // Initialize Leaflet Map
         document.addEventListener('DOMContentLoaded', function() {
+            const mapContainer = document.getElementById('map');
+            if (!mapContainer) return;
+            
             const map = L.map('map', {
                 center: [20, 0],
                 zoom: 2,
@@ -1563,9 +1608,27 @@
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
                 subdomains: 'abcd',
-                maxZoom: 20,
-                className: 'emerald-map-tiles'
+                maxZoom: 20
             }).addTo(map);
+            
+            // Force map to recalculate size after load and on resize
+            setTimeout(() => { map.invalidateSize(); }, 100);
+            setTimeout(() => { map.invalidateSize(); }, 500);
+            setTimeout(() => { map.invalidateSize(); }, 1000);
+            
+            window.addEventListener('resize', () => {
+                setTimeout(() => { map.invalidateSize(); }, 100);
+            });
+            
+            // Also invalidate when scrolling into view
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => { map.invalidateSize(); }, 100);
+                    }
+                });
+            });
+            observer.observe(mapContainer);
 
             const locations = [
                 { coords: [25.0174, 121.5405], title: "National Taiwan University", subtitle: "Taipei, Taiwan", icon: "🏫" },
