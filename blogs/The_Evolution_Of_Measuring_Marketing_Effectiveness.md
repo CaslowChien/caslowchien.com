@@ -1,7 +1,7 @@
 ---
 title: "The Evolution of Measuring Marketing Effectiveness"
 date: "2025-12-13"
-tag: "Thoughts"
+tag: "Marketing"
 link: "https://www.vizuro.com/post/the-evolution-of-measuring-marketing-effectiveness"
 ---
 # The Evolution of Measuring Marketing Effectiveness
