@@ -113,7 +113,7 @@
 
         .hero-text {
             text-align: center;
-            margin-bottom: 4rem;
+            margin-bottom: 2rem;
         }
 
         h1 {
@@ -150,13 +150,14 @@
         }
 
         .subtitle {
-            font-size: 1rem;
+            font-size: 0.85rem;
             color: rgba(250, 249, 251, 0.5);
             font-weight: 300;
             letter-spacing: 2px;
             text-transform: uppercase;
             opacity: 0;
             animation: fadeUp 1s ease 0.2s forwards;
+            margin-bottom: 0.5rem;
         }
 
         .spectrum-indicator {
@@ -1162,7 +1163,7 @@
 
             /* Mobile: expanded state for project cards */
             .project-card.expanded {
-                height: 200px;
+                height: 400px;
                 border-color: var(--primary);
                 box-shadow: 0 0 30px var(--primary-glow), 0 0 60px rgba(153, 198, 189, 0.1);
             }
@@ -1175,6 +1176,10 @@
             .project-card.expanded .project-title { display: block; }
             .project-card.expanded .project-category { display: block; }
             .project-card.expanded .project-number { font-size: 2.5rem; }
+            
+            .project-card.expanded .project-image { opacity: 1; }
+            
+            .project-card.expanded::before { opacity: 1; }
             
             /* Map mobile fix */
             .map-container { 
@@ -1215,7 +1220,7 @@
 
         <main>
             <div class="hero-text">
-                <h1>I Build Real Products with<br><span class="emphasis">Data</span>, <span>Code, and Creativity</span></h1>
+                <h1>I Build Real Products with<br><span>Data, Code, and Creativity</span></h1>
                 <p class="subtitle">Selected Works</p>
             </div>
 
@@ -1310,7 +1315,7 @@
             <div class="social-links">
                 <a href="https://www.linkedin.com/in/caslow/" target="_blank">LinkedIn</a>
                 <a href="https://github.com/CaslowChien" target="_blank">GitHub</a>
-                <a href="mailto:caslowchien@gmail.com">Email</a>
+                <a href="/cdn-cgi/l/email-protection#b2d1d3c1deddc5d1dadbd7dcf2d5dfd3dbde9cd1dddf">Email</a>
             </div>
             <div class="scroll-hint">Click to explore</div>
         </footer>
@@ -1337,11 +1342,11 @@
         <div class="contact-content">
             <h2>Say hi!</h2>
             <p>Here's a draft for you:<br><em>"Hi Caslow, I would like to hire you. Best, [your-name]"</em></p>
-            <a href="mailto:caslowchien@gmail.com" class="contact-email">
+            <a href="/cdn-cgi/l/email-protection#7f1c1e0c1310081c17161a113f18121e1613511c1012" class="contact-email">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                caslowchien@gmail.com
+                <span class="__cf_email__" data-cfemail="0a696b7966657d6962636f644a6d676b636624696567">[email&#160;protected]</span>
             </a>
         </div>
     </section>
@@ -1427,7 +1432,7 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const projectsData = {
             1: {
@@ -1600,7 +1605,7 @@
             
             const map = L.map('map', {
                 center: [20, 0],
-                zoom: 2,
+                zoom: 1,
                 zoomControl: true,
                 scrollWheelZoom: false
             });
@@ -1954,16 +1959,3 @@
                 const loadedBlogs = await Promise.all(blogPromises);
                 blogsData = loadedBlogs.filter(blog => blog !== null);
                 renderFilterButtons();
-                renderBlogCards();
-                
-            } catch (error) {
-                console.log('Could not load blogs:', error.message);
-                renderBlogCards();
-            }
-        }
-
-        // Initialize blogs on page load
-        loadBlogs();
-    </script>
-</body>
-</html>
