@@ -1185,11 +1185,25 @@
                 opacity: 0.7;
             }
 
+            /* Mobile: Keep image from scaling, just reveal more of it */
+            .project-card .project-image {
+                object-fit: cover;
+                object-position: center;
+                transform: none !important;
+            }
+
             /* Mobile: expanded state for project cards */
             .project-card.expanded {
                 height: calc(100vh - 200px);
+                min-height: 400px;
+                max-height: 600px;
                 border-color: var(--primary);
                 box-shadow: 0 0 30px var(--primary-glow), 0 0 60px rgba(153, 198, 189, 0.1);
+            }
+            
+            /* Keep the image the same size, just show more of it as card expands */
+            .project-card.expanded .project-image {
+                transform: none !important;
             }
 
             .project-card.expanded .project-info { 
