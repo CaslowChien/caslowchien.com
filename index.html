@@ -1189,13 +1189,15 @@
             .project-card.expanded {
                 border-color: var(--primary);
                 box-shadow: 0 0 30px var(--primary-glow), 0 0 60px rgba(153, 198, 189, 0.1);
+                min-height: 400px;
+                max-height: 400px;
             }
 
             .project-card.expanded .project-info { 
                 opacity: 1;
                 visibility: visible;
                 transform: translateY(0);
-                max-height: 80vh;
+                max-height: 100vh;
                 padding: 1.25rem;
                 flex: 1;
             }
