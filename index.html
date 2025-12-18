@@ -267,17 +267,19 @@
         .project-card:hover::after { opacity: 0.5; }
         .project-card:hover::before { opacity: 1; }
 
-        .projects-container:hover .project-card {
-            flex: 0.3;
-            min-width: 40px;
-        }
-
-        .projects-container:hover .project-card:hover {
-            flex: 6;
-            max-width: none;
-            min-width: 400px;
-            border-color: var(--primary);
-            box-shadow: 0 0 40px var(--primary-glow), 0 0 80px rgba(153, 198, 189, 0.1), inset 0 0 30px rgba(195, 173, 208, 0.05);
+        @media (min-width: 481px) {
+            .projects-container:hover .project-card {
+                flex: 0.3;
+                min-width: 40px;
+            }
+        
+            .projects-container:hover .project-card:hover {
+                flex: 6;
+                max-width: none;
+                min-width: 400px;
+                border-color: var(--primary);
+                box-shadow: 0 0 40px var(--primary-glow), 0 0 80px rgba(153, 198, 189, 0.1), inset 0 0 30px rgba(195, 173, 208, 0.05);
+            }
         }
 
         .project-info {
