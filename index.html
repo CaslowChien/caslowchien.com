@@ -1118,6 +1118,13 @@
             h1 br::before { content: " "; }
         }
 
+        @media (hover: hover) {
+            .projects-container:hover .project-card {
+                flex: 0.3;
+                min-width: 40px;
+            }
+        }
+
         @media (max-width: 480px) {
             .hero-text { margin-bottom: 2rem; }
             .spectrum-indicator { margin-bottom: 1.5rem; }
